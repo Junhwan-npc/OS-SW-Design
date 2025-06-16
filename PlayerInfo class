@@ -1,0 +1,60 @@
+//PlayerrInfo.java
+
+package RunAndHit;
+
+public class PlayerInfo {
+    
+    private double battingAverage;      // 타율
+    private double onBasePercentage;    // 출루율
+    private double sluggingPercentage;  // 장타율
+    private double OPS; //OPS
+
+    private int hits;       // 안타
+    private int doubles;    // 2루타
+    private int triples;    // 3루타
+    private int homeRuns;   // 홈런
+
+    public PlayerInfo(double battingAverage,
+                      double onBasePercentage,
+                      double sluggingPercentage,
+                      double OPS,
+                      int hits, int doubles,
+                      int triples, int homeRuns) {
+
+        this.battingAverage     = battingAverage;
+        this.onBasePercentage   = onBasePercentage;
+        this.sluggingPercentage = sluggingPercentage;
+        this.OPS = OPS;
+        this.hits       = hits;
+        this.doubles    = doubles;
+        this.triples    = triples;
+        this.homeRuns   = homeRuns;
+    }
+
+    public double getBattingAverage()    { return battingAverage; }
+    public double getOnBasePercentage()  { return onBasePercentage; }
+    public double getSluggingPercentage(){ return sluggingPercentage; }
+    public double getOPS() {return OPS;}
+
+    public int getHits()      { return hits; }
+    public int getDoubles()   { return doubles; }
+    public int getTriples()   { return triples; }
+    public int getHomeRuns()  { return homeRuns; }
+
+    public void setBattingAverage(double battingAverage)       { this.battingAverage = battingAverage; }
+    public void setOnBasePercentage(double onBasePercentage)   { this.onBasePercentage = onBasePercentage; }
+    public void setSluggingPercentage(double sluggingPercentage){ this.sluggingPercentage = sluggingPercentage; }
+    public void setOPS(double OPS) {this.OPS = OPS; }
+
+    public void setHits(int hits)       { this.hits = hits; }
+    public void setDoubles(int doubles) { this.doubles = doubles; }
+    public void setTriples(int triples) { this.triples = triples; }
+    public void setHomeRuns(int homeRuns){ this.homeRuns = homeRuns; }
+
+    @Override
+    public String toString() {
+        return String.format("AVG %.3f | OBP %.3f | SLG %.3f  | OPS %.3f | H %d 2B %d 3B %d HR %d",
+                battingAverage, onBasePercentage, sluggingPercentage, OPS,
+                hits, doubles, triples, homeRuns);
+    }
+}
