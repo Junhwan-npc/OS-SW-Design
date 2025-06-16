@@ -1,0 +1,175 @@
+//ManagerUI.java
+
+package RunAndHit;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
+public class ManagerUI extends JFrame {
+
+    private final Manager manager;
+
+    private JTextField tfName, tfBirth, tfTeam, tfPosition, tfNumber;
+    private JTextField tfAVG, tfOBP, tfSLG, tfOPS, tfH, tf2B, tf3B, tfHR;
+
+    private final DefaultListModel<String> rosterModel = new DefaultListModel<>();
+
+    public ManagerUI(Manager manager) {
+        this.manager = manager;
+
+        setTitle("관리자 모드 - 선수 정보 입력");
+        setSize(800, 550);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        add(buildInputForm(), BorderLayout.NORTH);
+        add(buildRosterList(), BorderLayout.CENTER);
+        add(buildBottomButtons(), BorderLayout.SOUTH);
+
+        setVisible(true);
+    }
+
+    private JPanel buildInputForm() {
+        JPanel form = new JPanel(new GridLayout(6, 6, 5, 5));
+
+        tfName     = new JTextField();
+        tfBirth    = new JTextField();   // yyyy-MM-dd
+        tfTeam     = new JTextField();
+        tfPosition = new JTextField();
+        tfNumber   = new JTextField();
+
+        tfAVG = new JTextField();
+        tfOBP = new JTextField();
+        tfSLG = new JTextField();
+        tfOPS = new JTextField();
+        tfH   = new JTextField();
+        tf2B  = new JTextField();
+        tf3B  = new JTextField();
+        tfHR  = new JTextField();
+
+        form.add(new JLabel("이름"));      form.add(tfName);
+        form.add(new JLabel("생년월일"));  form.add(tfBirth);
+        form.add(new JLabel("팀"));        form.add(tfTeam);
+
+        form.add(new JLabel("포지션"));     form.add(tfPosition);
+        form.add(new JLabel("등번호"));     form.add(tfNumber);
+        form.add(new JLabel("타율 AVG"));   form.add(tfAVG);
+
+        form.add(new JLabel("출루율 OBP")); form.add(tfOBP);
+        form.add(new JLabel("장타율 SLG")); form.add(tfSLG);
+        form.add(new JLabel("OPS"));       form.add(tfOPS);
+
+        form.add(new JLabel("안타 H"));     form.add(tfH);
+        form.add(new JLabel("2루타 2B"));   form.add(tf2B);
+        form.add(new JLabel("3루타 3B"));   form.add(tf3B);
+        form.add(new JLabel("홈런 HR"));    form.add(tfHR);
+
+        JButton btnAdd = new JButton("추가");
+        btnAdd.addActionListener(this::handleAddPlayer);
+        form.add(btnAdd);
+
+        return form;
+    }
+
+    private JScrollPane buildRosterList() {
+        JList<String> list = new JList<>(rosterModel);
+        refreshRosterView();
+        return new JScrollPane(list);
+    }
+
+    private void refreshRosterView() {
+        rosterModel.clear();
+        for (Player p : manager.getRoster()) {
+            rosterModel.addElement(p.toString());
+        }
+    }
+
+    private JPanel buildBottomButtons() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JButton btnSave = new JButton("CSV 저장");
+        JButton btnLoad = new JButton("CSV 불러오기");
+
+        btnSave.addActionListener(this::handleSave);
+        btnLoad.addActionListener(this::handleLoad);
+
+        panel.add(btnLoad);
+        panel.add(btnSave);
+
+        return panel;
+    }
+
+    private void handleAddPlayer(ActionEvent e) {
+        try {
+            String name      = tfName.getText().trim();
+            LocalDate dob    = LocalDate.parse(tfBirth.getText().trim());
+            String team      = tfTeam.getText().trim();
+            String position  = tfPosition.getText().trim();
+            int number       = Integer.parseInt(tfNumber.getText().trim());
+
+            double avg = Double.parseDouble(tfAVG.getText().trim());
+            double obp = Double.parseDouble(tfOBP.getText().trim());
+            double slg = Double.parseDouble(tfSLG.getText().trim());
+            double ops = Double.parseDouble(tfOPS.getText().trim());
+            int h      = Integer.parseInt(tfH.getText().trim());
+            int d2     = Integer.parseInt(tf2B.getText().trim());
+            int d3     = Integer.parseInt(tf3B.getText().trim());
+            int hr     = Integer.parseInt(tfHR.getText().trim());
+
+            PlayerInfo info = new PlayerInfo(avg, obp, slg, ops, h, d2, d3, hr);
+            Player player   = new Player(name, dob, team, position, number, info);
+            manager.addPlayer(player);
+
+            refreshRosterView();
+            clearFields();
+
+        } catch (NumberFormatException | DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "입력 오류: 숫자 형식 또는 날짜 형식(yyyy-MM-dd)을 확인하세요.",
+                    "입력 오류", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void clearFields() {
+        tfName.setText(""); tfBirth.setText(""); tfTeam.setText("");
+        tfPosition.setText(""); tfNumber.setText("");
+        tfAVG.setText(""); tfOBP.setText(""); tfSLG.setText(""); tfOPS.setText("");
+        tfH.setText(""); tf2B.setText(""); tf3B.setText(""); tfHR.setText("");
+    }
+
+    private void handleSave(ActionEvent e) {
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                Path path = fc.getSelectedFile().toPath();
+                manager.saveToCsv(path);
+                JOptionPane.showMessageDialog(this, "CSV 파일 저장 완료!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "저장 중 오류: " + ex.getMessage(),
+                        "파일 오류", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void handleLoad(ActionEvent e) {
+        JFileChooser fc = new JFileChooser();
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                Path path = fc.getSelectedFile().toPath();
+                manager.loadFromCsv(path);
+                refreshRosterView();
+                JOptionPane.showMessageDialog(this, "CSV 불러오기 완료!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "불러오기 중 오류: " + ex.getMessage(),
+                        "파일 오류", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+}
