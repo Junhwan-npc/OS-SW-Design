@@ -1,0 +1,51 @@
+//player.java
+
+package RunAndHit;
+
+import java.time.LocalDate;
+
+public class Player {
+
+    private String name;
+    private LocalDate birthDate;
+    private String team;
+    private String position;
+    private int uniformNumber;
+
+    private PlayerInfo info;
+
+    public Player(String name,
+                  LocalDate birthDate,
+                  String team,
+                  String position,
+                  int uniformNumber,
+                  PlayerInfo info) {
+
+        this.name          = name;
+        this.birthDate     = birthDate;
+        this.team          = team;
+        this.position      = position;
+        this.uniformNumber = uniformNumber;
+        this.info          = info;
+    }
+
+    public String getName()          { return name; }
+    public LocalDate getBirthDate()  { return birthDate; }
+    public String getTeam()          { return team; }
+    public String getPosition()      { return position; }
+    public int getUniformNumber()    { return uniformNumber; }
+    public PlayerInfo getInfo()      { return info; }
+
+    public void setName(String name)                { this.name = name; }
+    public void setBirthDate(LocalDate birthDate)   { this.birthDate = birthDate; }
+    public void setTeam(String team)                { this.team = team; }
+    public void setPosition(String position)        { this.position = position; }
+    public void setUniformNumber(int uniformNumber) { this.uniformNumber = uniformNumber; }
+    public void setInfo(PlayerInfo info)            { this.info = info; }
+
+    @Override
+    public String toString() {
+        return String.format("%s (No.%d, %s, %s) - %s",
+                name, uniformNumber, team, position, info);
+    }
+}
