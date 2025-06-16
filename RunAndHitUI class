@@ -1,0 +1,118 @@
+//RunAndHitUI.java
+
+package RunAndHit;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+public class RunAndHitUI extends JFrame {
+
+    private final Manager manager = new Manager();
+
+    private JTextField tfName;
+    private JTextField tfTeam;
+    private JTextArea taResult;
+    private int loginFailCount = 0;
+
+    public RunAndHitUI() {
+        setTitle("RUN AND HIT - 선수 검색");
+        setSize(650, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        add(buildNorthBar(), BorderLayout.NORTH);
+        add(buildResultArea(), BorderLayout.CENTER);
+
+        setVisible(true);
+    }
+
+    private JPanel buildNorthBar() {
+        JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+
+        tfName = new JTextField(12);
+        tfTeam = new JTextField(12);
+
+        JButton btnSearch  = new JButton("검색");
+        JButton btnManager = new JButton("관리자로 시작");
+
+        btnSearch.addActionListener(this::searchPlayer);
+        btnManager.addActionListener(this::openManagerUI);
+
+        north.add(new JLabel("선수 이름:"));
+        north.add(tfName);
+        north.add(new JLabel("팀 이름:"));
+        north.add(tfTeam);
+        north.add(btnSearch);
+        north.add(btnManager);
+
+        return north;
+    }
+
+    private JScrollPane buildResultArea() {
+        taResult = new JTextArea();
+        taResult.setEditable(false);
+        taResult.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        return new JScrollPane(taResult);
+    }
+
+    private void searchPlayer(ActionEvent e) {
+        String name = tfName.getText().trim().toLowerCase();
+        String team = tfTeam.getText().trim().toLowerCase();
+
+        if (name.isEmpty() && team.isEmpty()) {
+            taResult.setText("※ 이름 또는 팀 중 하나 이상 입력해주세요.");
+            return;
+        }
+
+        manager.getRoster().stream()
+                .filter(p -> p.getName().toLowerCase().contains(name))
+                .filter(p -> p.getTeam().toLowerCase().contains(team))
+                .findFirst()
+                .ifPresentOrElse(
+                    p -> taResult.setText(p.toString()),
+                    () -> taResult.setText("※ 일치하는 선수를 찾을 수 없습니다.")
+                );
+    }
+
+    private void openManagerUI(ActionEvent e) {
+        if (loginFailCount >= 3) {
+            JOptionPane.showMessageDialog(this, "로그인 시도 횟수를 초과했습니다.", "잠김", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JPasswordField passwordField = new JPasswordField();
+        Object[] message = {
+            "관리자 비밀번호를 입력하세요:", passwordField
+        };
+
+        int option = JOptionPane.showConfirmDialog(
+            this, message, "관리자 인증",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (option != JOptionPane.OK_OPTION) {
+            JOptionPane.showMessageDialog(this, "인증이 취소되었습니다.");
+            return;
+        }
+
+        String input = new String(passwordField.getPassword());
+        String correctPassword = "admin04"; //관리자 비밀번호
+
+        if (!input.equals(correctPassword)) {
+            loginFailCount++;
+            int remaining = 3 - loginFailCount;
+            JOptionPane.showMessageDialog(this,
+                    "비밀번호가 올바르지 않습니다.\n남은 시도 횟수: " + remaining,
+                    "인증 실패", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        loginFailCount = 0;
+        new ManagerUI(manager);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(RunAndHitUI::new);
+    }
+}
