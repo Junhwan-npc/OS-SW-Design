@@ -1,0 +1,95 @@
+//Manager.java
+
+package RunAndHit;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class Manager {
+
+    private final List<Player> roster = new ArrayList<>();
+
+    public void addPlayer(Player player) {
+        roster.add(player);
+    }
+
+    public Optional<Player> findByName(String name) {
+        return roster.stream()
+                     .filter(p -> p.getName().equalsIgnoreCase(name))
+                     .findFirst();
+    }
+
+    public boolean removePlayer(String name) {
+        return roster.removeIf(p -> p.getName().equalsIgnoreCase(name));
+    }
+
+    public List<Player> getRoster() {
+        return List.copyOf(roster);
+    }
+
+    public boolean updatePlayerInfo(String name, PlayerInfo newInfo) {
+        return findByName(name).map(p -> { p.setInfo(newInfo); return true; })
+                               .orElse(false);
+    }
+
+    public void saveToCsv(Path file) throws IOException {
+        try (BufferedWriter bw = Files.newBufferedWriter(file)) {
+            for (Player p : roster) {
+                PlayerInfo i = p.getInfo();
+                bw.write(String.join(",",
+                    p.getName(),
+                    p.getBirthDate().toString(),
+                    p.getTeam(),
+                    p.getPosition(),
+                    String.valueOf(p.getUniformNumber()),
+                    String.valueOf(i.getBattingAverage()),
+                    String.valueOf(i.getOnBasePercentage()),
+                    String.valueOf(i.getSluggingPercentage()),
+                    String.valueOf(i.getOPS()),
+                    String.valueOf(i.getHits()),
+                    String.valueOf(i.getDoubles()),
+                    String.valueOf(i.getTriples()),
+                    String.valueOf(i.getHomeRuns())
+                ));
+                bw.newLine();
+            }
+        }
+    }
+
+    public void loadFromCsv(Path file) throws IOException {
+        try (BufferedReader br = Files.newBufferedReader(file)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] t = line.split(",");
+                if (t.length != 13) continue;   // 잘못된 행은 건너뜀
+
+                String  name   = t[0];
+                LocalDate dob  = LocalDate.parse(t[1]);
+                String  team   = t[2];
+                String  pos    = t[3];
+                int     no     = Integer.parseInt(t[4]);
+
+                double avg = Double.parseDouble(t[5]);
+                double obp = Double.parseDouble(t[6]);
+                double slg = Double.parseDouble(t[7]);
+                double ops = Double.parseDouble(t[8]); 
+                int    h   = Integer.parseInt(t[9]);
+                int    d2  = Integer.parseInt(t[10]);
+                int    d3  = Integer.parseInt(t[11]);
+                int    hr  = Integer.parseInt(t[12]);
+
+                PlayerInfo info = new PlayerInfo(avg, obp, slg, ops, h, d2, d3, hr);
+                Player     p    = new Player(name, dob, team, pos, no, info);
+                roster.add(p);
+            }
+        }
+    }
+
+}
