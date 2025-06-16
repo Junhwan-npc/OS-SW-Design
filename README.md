@@ -1,186 +1,97 @@
-# OS-SW-Design
-2025-1 Open Source-Software Design Project
+//Code 실행 방법
 
-//Eclipse를 이용해서 Java로 구현
-
-// RunAndHitGUI.java
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-
-public class RunAndHitGUI extends JFrame {
-    private JTextField nameField, teamField;
-    private JTextArea resultArea;
-
-    public RunAndHitGUI() {
-        setTitle("RUN AND HIT - 선수 검색");
-        setSize(500, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
-
-        // 상단 입력 패널
-        JPanel inputPanel = new JPanel();
-        inputPanel.add(new JLabel("선수 이름:"));
-        nameField = new JTextField(10);
-        inputPanel.add(nameField);
-
-        inputPanel.add(new JLabel("소속팀:"));
-        teamField = new JTextField(10);
-        inputPanel.add(teamField);
-
-        JButton searchButton = new JButton("검색");
-        inputPanel.add(searchButton);
-
-        add(inputPanel, BorderLayout.NORTH);
-
-        // 결과 출력 창
-        resultArea = new JTextArea();
-        resultArea.setEditable(false);
-        add(new JScrollPane(resultArea), BorderLayout.CENTER);
-
-        // 이벤트 처리
-        searchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String name = nameField.getText().trim();
-                String team = teamField.getText().trim();
-                displayPlayerInfo(name, team);
-            }
-        });
-    }
-
-    private void displayPlayerInfo(String name, String team) {
-        Player player = PlayerDataBase.findPlayer(name, team);
-        if (player == null) {
-            resultArea.setText("⚠️ 해당 선수는 존재하지 않습니다.");
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("🧾 선수 정보\n");
-        sb.append("이름: ").append(player.getName()).append("\n");
-        sb.append("포지션: ").append(player.getPosition()).append("\n");
-        sb.append("등번호: ").append(player.getNumber()).append("\n");
-        sb.append("팀: ").append(player.getTeam()).append("\n\n");
-
-        sb.append("📊 타격 기록\n");
-        for (PlayerRecord rec : player.getRecords()) {
-            sb.append(rec.getYear()).append("년 | ")
-              .append("AVG: ").append(rec.getAvg()).append(", ")
-              .append("OBP: ").append(rec.getObp()).append(", ")
-              .append("SLG: ").append(rec.getSlg()).append(", ")
-              .append("OPS: ").append(rec.getOps()).append("\n");
-        }
-
-        resultArea.setText(sb.toString());
-    }
-
-    public static void main(String[] args) {
-        RunAndHitGUI gui = new RunAndHitGUI();
-        gui.setVisible(true);
-    }
-}
-
-// Player.java
-import java.util.*;
-
-public class Player {
-    private String name;
-    private String position;
-    private int number;
-    private String team;
-    private List<PlayerRecord> records;
-
-    public Player(String name, String position, int number, String team) {
-        this.name = name;
-        this.position = position;
-        this.number = number;
-        this.team = team;
-        this.records = new ArrayList<>();
-    }
-
-    public String getName() { return name; }
-    public String getPosition() { return position; }
-    public int getNumber() { return number; }
-    public String getTeam() { return team; }
-    public List<PlayerRecord> getRecords() { return records; }
-
-    public void addRecord(PlayerRecord record) {
-        records.add(record);
-    }
-}
+Readme.txt
 
 
-// PlayerRecord.java
-public class PlayerRecord {
-    private int year;
-    private double avg, obp, slg, ops;
+===============
+RUNANDHIT - README
+===============
 
-    public PlayerRecord(int year, double avg, double obp, double slg) {
-        this.year = year;
-        this.avg = avg;
-        this.obp = obp;
-        this.slg = slg;
-        this.ops = obp + slg; // OPS = OBP + SLG
-    }
+- 프로그램 이름
+RunAndHit (자바 기반 KBO 타자 정보 관리 및 검색 프로그램)
 
-    public int getYear() { return year; }
-    public double getAvg() { return avg; }
-    public double getObp() { return obp; }
-    public double getSlg() { return slg; }
-    public double getOps() { return ops; }
-}
+- 프로그램 개요
+-------------------
+RunAndHit는 사용자가 KBO 타자 정보를 검색하거나, 
+관리자 모드에서 선수 정보를 추가, 수정, CSV 저장/불러오기 할 수 있는
+GUI 어플리케이션입니다.
+
+- 최소 실행 환경
+
+[하드웨어]
+CPU 1.8Hz 듀얼코어 이상
+RAM 4GB 이상
+디스크 100MB 이상 여유 공간
 
 
-// PlayerDataBase.java
-import java.io.*;
-import java.util.*;
+[소프트웨어]
+운영체제 : Windows 7 / macOS
+Java Version : JDK 11이상 필수
 
-public class PlayerDataBase {
-    private static List<Player> players = new ArrayList<>();
 
-    static {
-        loadFromCSV("player.csv");
-    }
+- 구성 파일
 
-    public static void loadFromCSV(String filename) {
-        Map<String, Player> playerMap = new HashMap<>();
+- RunAndHitUI.java         (메인 실행 파일)
+- Manager.java             (선수 목록 관리)
+- ManagerUI.java           (관리자용 입력 창)
+- Player.java              (선수 정보 클래스)
+- PlayerInfo.java          (선수 성적 정보 클래스)
+- Player Info.CSV         (선수 정보 저장 CSV 파일)
 
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
+- 실행 방법
 
-                if (data.length < 8) continue; // 잘못된 줄 무시
+1. `RunAndHitUI`를 실행합니다.
+   - 방법 1: IDE(Eclipse, IntelliJ 등)에서 `RunAndHitUI` 실행
+   - 방법 2: 터미널에서 컴파일 및 실행
 
-                String name = data[0];
-                String position = data[1];
-                int number = Integer.parseInt(data[2]);
-                String team = data[3];
-                int year = Integer.parseInt(data[4]);
-                double avg = Double.parseDouble(data[5]);
-                double obp = Double.parseDouble(data[6]);
-                double slg = Double.parseDouble(data[7]);
+   예:
+   > javac RunAndHitUI.java
+   > java RunAndHitUI
 
-                String key = name + "_" + team;
+   ※ 모든 클래스 파일이 같은 디렉토리에 있어야 합니다.
 
-                Player player = playerMap.getOrDefault(key, new Player(name, position, number, team));
-                player.addRecord(new PlayerRecord(year, avg, obp, slg));
-                playerMap.put(key, player);
-            }
+2. 프로그램이 실행되면 아래 기능을 사용할 수 있습니다.
+   - 이름 + 팀명으로 선수 검색
+   - [관리자로 시작] 버튼 클릭 → 비밀번호 입력 (`admin04`)
+   - 관리자 모드에서 선수 정보 입력 및 CSV 저장/불러오기
 
-            players = new ArrayList<>(playerMap.values());
-        } catch (IOException e) {
-            System.out.println("⚠️ CSV 파일을 읽을 수 없습니다: " + e.getMessage());
-        }
-    }
 
-    public static Player findPlayer(String name, String team) {
-        for (Player p : players) {
-            if (p.getName().equals(name) && p.getTeam().equals(team)) {
-                return p;
-            }
-        }
-        return null;
-    }
-}
+!! 관리자 모드 안내 !!
+---------------------
+- 비밀번호 : admin04
+- 최대 3회까지 틀릴 수 있으며, 3회 실패 시 관리자 모드 잠김
+- 프로그램 재시작 시 시도 횟수 초기화됨
+
+3. 관리자 모드에서 제공받은 CSV 파일을 불러와 사용할 수 있습니다.
+- 관리자 창에서 CSV 불러오기 버튼 클릭
+- 제공받은 Player Info.CSV 파일 선택 후 열기
+- 저장 후 검색창에서 선수 이름 검색하면 CSV 파일에 저장된 선수 정보가 출력됨
+
+
+CSV 저장/불러오기 형식
+--------------------------
+- 컬럼 순서 :
+  이름,생년월일(yyyy-MM-dd),팀,포지션,등번호,
+  AVG,OBP,SLG,OPS,H,2B,3B,HR
+
+- 예시:
+  홍길동,1995-08-10,LG,1B,25,0.321,0.412,0.501,0.913,142,30,5,18
+
+
+- 기타 참고사항
+------------------
+- 프로그램은 로컬 파일에만 접근하며 인터넷 연결은 필요하지 않습니다.
+- 입력값 오류 또는 날짜 형식이 잘못되었을 경우 오류 메시지가 표시됩니다.
+- CSV 파일은 메모장 또는 Excel에서 열어 확인할 수 있습니다.
+
+
+- 제작자
+----------
+- 이름 : Junhwan Jeon
+- 이메일 : hwan6274@naver.com
+- 버전 : v1.0
+- 작성일 : 2025.06
+
+==========================
+     END OF README
+==========================
